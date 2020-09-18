@@ -1,0 +1,30 @@
+# Default values for gam-agent.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  repository: xiao4011/mysqldump
+  tag: latest
+  pullPolicy: Always
+
+nameOverride: ""
+fullnameOverride: ""
+
+schedule:
+  schedule: "0 22 * * *"
+  nodeSelector:
+    kubernetes.io/hostname: worker01
+  hostpath: "/home/core/mysqldump"
+
+env:
+  - name: ALL_DATABASES
+    value: "true"
+  # - name: IGNORE_DATABASE
+  #   value: "DB_NAME"
+  # - name: DB_NAME
+  #   value: "DB_NAME"
+
+secret:
+  dbhost: ""
+  dbport: "3306"
+  dbuser: ""
+  dbpass: ""

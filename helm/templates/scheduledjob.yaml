@@ -1,0 +1,51 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "fullname" . }}
+  labels:
+    {{- include "labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+        {{- with .Values.schedule.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+          containers:
+          - name: {{ .Chart.Name }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            env:
+              {{- toYaml .Values.env | nindent 14 }}
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqldump-secret
+                    key: dbhost
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqldump-secret
+                    key: dbport
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqldump-secret
+                    key: dbuser
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqldump-secret
+                    key: dbpass
+
+            imagePullPolicy: Always
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: mysqldump
+          volumes:
+            - name: mysqldump
+              hostPath:
+                path: {{ .Values.schedule.hostpath }}
+          restartPolicy: OnFailure
